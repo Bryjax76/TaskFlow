@@ -10,12 +10,16 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $view = "tasks.index";
-        $tasks = Task::all();
+        $search = $request->search;
 
-        return view($view, compact('tasks'));
+        $tasks = Task::search($search)
+            ->latest()
+            ->paginate(10);
+
+        return view($view, compact('tasks', 'search'));
     }
 
     /**
@@ -34,17 +38,17 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'=> 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'status' => 'nullable|string',
-            'priority'=> 'nullable|integer',
+            'priority' => 'nullable|integer',
         ]);
 
         Task::create([
-            'title'=> $validated['title'],
-            'description'=> $validated['description'],
-            'status'=> $validated['status'],
-            'priority'=> $validated['priority'],
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'status' => $validated['status'],
+            'priority' => $validated['priority'],
         ]);
 
         return redirect()->route('tasks.index')
@@ -56,7 +60,8 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        $view = 'tasks.show';
+        return view($view, compact('task'));
     }
 
     /**
@@ -64,7 +69,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        return view('tasks.edit', compact('task'));
     }
 
     /**
@@ -72,7 +77,17 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string',
+            'priority' => 'nullable|integer',
+        ]);
+
+        $task->update($validated);
+
+        return redirect()->route('tasks.index')
+            ->with('success', 'Task updated 🔥');
     }
 
     /**
@@ -80,6 +95,10 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
+
+        return redirect()
+            ->route('tasks.index')
+            ->with('success', 'Task usunięty 🗑️');
     }
 }
