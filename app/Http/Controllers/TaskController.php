@@ -99,6 +99,6 @@ class TaskController extends Controller
 
         return redirect()
             ->route('tasks.index')
-            ->with('success', 'Task usunięty 🗑️');
+            ->with('success', 'Task deleted 🗑️');
     }
 }
