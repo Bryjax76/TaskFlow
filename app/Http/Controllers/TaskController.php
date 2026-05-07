@@ -22,12 +22,14 @@ class TaskController extends Controller
             ->when($request->priority, fn($q, $v) => $q->where('priority', $v))
             ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
             ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
+            ->when($request->trashed, fn($q) => $q->onlyTrashed())
             ->latest()
             ->paginate(10);
 
         $projects = Project::orderBy('name')->get();
+        $allTags = \App\Models\Tag::orderBy('name')->get();
 
-        return view($view, compact('tasks', 'search', 'projects'));
+        return view($view, compact('tasks', 'search', 'projects', 'allTags'));
     }
 
     /**
@@ -179,5 +181,61 @@ class TaskController extends Controller
         $task->update(['status' => $validated['status']]);
 
         return redirect()->back()->with('success', 'Status updated! 🔥');
+    }
+
+    /**
+     * Quick add a tag to a task.
+     */
+    public function quickAddTag(Request $request, Task $task)
+    {
+        $validated = $request->validate([
+            'tag_name' => 'required|string|max:255',
+        ]);
+
+        $tagName = trim($validated['tag_name']);
+
+        // Find or create the tag
+        $tag = \App\Models\Tag::firstOrCreate(
+            ['name' => $tagName],
+            ['color' => '#' . str_pad(dechex(mt_rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT)] // Random color for new tags
+        );
+
+        // Attach if not already attached
+        if (!$task->tags->contains($tag->id)) {
+            $task->tags()->attach($tag->id);
+        }
+
+        return redirect()->back()->with('success', "Tag '{$tagName}' added! 🏷️");
+    }
+
+    /**
+     * Remove (unpin) a tag from a task.
+     */
+    public function removeTag(Task $task, \App\Models\Tag $tag)
+    {
+        $task->tags()->detach($tag->id);
+        return redirect()->back()->with('success', "Tag '{$tag->name}' removed! 💨");
+    }
+
+    /**
+     * Restore a soft-deleted task.
+     */
+    public function restore($id)
+    {
+        $task = Task::withTrashed()->findOrFail($id);
+        $task->restore();
+
+        return redirect()->back()->with('success', 'Task restored! 🔄');
+    }
+
+    /**
+     * Permanently delete a task.
+     */
+    public function forceDelete($id)
+    {
+        $task = Task::withTrashed()->findOrFail($id);
+        $task->forceDelete();
+
+        return redirect()->back()->with('success', 'Task permanently deleted! 🗑️');
     }
 }

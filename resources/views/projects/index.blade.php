@@ -13,7 +13,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-8">
 
             {{-- Success message --}}
             @if(session('success'))
@@ -42,9 +42,11 @@
                                     <tr class="hover:bg-gray-50 transition duration-150">
                                         <td class="px-4 py-2 text-sm">{{ $project->id }}</td>
                                         <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ $project->name }}</td>
-                                        <td class="px-4 py-2 text-sm text-gray-600">{{ Str::limit($project->description, 60) }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600">
+                                            {{ Str::limit($project->description, 60) }}</td>
                                         <td class="px-4 py-2 text-sm">
-                                            <span class="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded-full font-medium">
+                                            <span
+                                                class="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded-full font-medium">
                                                 {{ $project->tasks_count }} {{ Str::plural('task', $project->tasks_count) }}
                                             </span>
                                         </td>
@@ -62,9 +64,8 @@
                                                     Edit
                                                 </a>
 
-                                                <form action="{{ route('projects.destroy', $project->id) }}"
-                                                      method="POST"
-                                                      onsubmit="return confirm('Are you sure you want to delete this project?')">
+                                                <form action="{{ route('projects.destroy', $project->id) }}" method="POST"
+                                                    onsubmit="return confirm('Are you sure you want to delete this project?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"

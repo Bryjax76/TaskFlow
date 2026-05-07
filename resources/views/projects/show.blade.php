@@ -19,7 +19,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- Project details --}}
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
@@ -53,17 +53,23 @@
                                     <tr class="hover:bg-gray-50 transition duration-150">
                                         <td class="px-4 py-2 text-sm">{{ $task->id }}</td>
                                         <td class="px-4 py-2 text-sm font-medium text-gray-900">
-                                            <a href="{{ route('tasks.show', $task->id) }}" class="text-indigo-600 hover:underline">
+                                            <a href="{{ route('tasks.show', $task->id) }}"
+                                                class="text-indigo-600 hover:underline">
                                                 {{ $task->title }}
                                             </a>
                                         </td>
                                         <td class="px-4 py-2 text-sm">
                                             @if($task->status === 'done')
-                                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full font-medium">✓ Done</span>
+                                                <span
+                                                    class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full font-medium">✓
+                                                    Done</span>
                                             @elseif($task->status === 'in_progress')
-                                                <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full font-medium">⟳ In progress</span>
+                                                <span
+                                                    class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full font-medium">⟳
+                                                    In progress</span>
                                             @else
-                                                <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full font-medium">○ Todo</span>
+                                                <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full font-medium">○
+                                                    Todo</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-sm whitespace-nowrap">

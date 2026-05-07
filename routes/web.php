@@ -24,6 +24,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/tasks/{task}', [TaskController::class,'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [TaskController::class,'destroy'])->name('tasks.destroy');
     Route::patch('/tasks/{task}/status', [TaskController::class,'updateStatus'])->name('tasks.updateStatus');
+    Route::post('/tasks/{task}/tags/quick', [TaskController::class,'quickAddTag'])->name('tasks.quickAddTag');
+    Route::delete('/tasks/{task}/tags/{tag}', [TaskController::class,'removeTag'])->name('tasks.removeTag');
+    Route::post('/tasks/{id}/restore', [TaskController::class,'restore'])->name('tasks.restore');
+    Route::delete('/tasks/{id}/force-delete', [TaskController::class,'forceDelete'])->name('tasks.forceDelete');
     Route::get('/tasks/{task}', [TaskController::class,'show'])->name('tasks.show');
 
     Route::resource('projects', ProjectController::class);
