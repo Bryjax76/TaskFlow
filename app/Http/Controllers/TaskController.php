@@ -56,7 +56,8 @@ class TaskController extends Controller
             'status' => 'nullable|string',
             'priority' => 'nullable|integer',
             'project_id' => 'nullable|exists:projects,id',
-            'employee_id' => 'nullable|exists:employees,id',
+            'employees' => 'nullable|array',
+            'employees.*' => 'exists:employees,id',
             'due_date' => 'nullable|date',
             'color' => 'nullable|string',
             'tags' => 'nullable|array',
@@ -73,19 +74,22 @@ class TaskController extends Controller
             $projectId = $unassignedProject->id;
         }
 
-        Task::create([
+        $task = Task::create([
             'title' => $validated['title'],
             'description' => $validated['description'],
             'status' => $validated['status'],
             'priority' => $validated['priority'],
             'project_id' => $projectId,
-            'employee_id' => $validated['employee_id'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
             'color' => $validated['color'] ?? '#indigo-600',
         ]);
 
         if (!empty($validated['tags'])) {
             $task->tags()->sync($validated['tags']);
+        }
+
+        if (!empty($validated['employees'])) {
+            $task->employees()->sync($validated['employees']);
         }
 
         return redirect()->route('tasks.index')
@@ -123,7 +127,8 @@ class TaskController extends Controller
             'status' => 'nullable|string',
             'priority' => 'nullable|integer',
             'project_id' => 'nullable|exists:projects,id',
-            'employee_id' => 'nullable|exists:employees,id',
+            'employees' => 'nullable|array',
+            'employees.*' => 'exists:employees,id',
             'due_date' => 'nullable|date',
             'color' => 'nullable|string',
             'tags' => 'nullable|array',
@@ -146,12 +151,12 @@ class TaskController extends Controller
             'status' => $validated['status'],
             'priority' => $validated['priority'],
             'project_id' => $projectId,
-            'employee_id' => $validated['employee_id'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
             'color' => $validated['color'] ?? $task->color,
         ]);
 
         $task->tags()->sync($validated['tags'] ?? []);
+        $task->employees()->sync($validated['employees'] ?? []);
 
         return redirect()->route('tasks.index')
             ->with('success', 'Task updated 🔥');

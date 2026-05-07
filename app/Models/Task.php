@@ -16,7 +16,6 @@ class Task extends Model
         'status',
         'priority',
         'project_id',
-        'employee_id',
         'position',
         'due_date',
         'color',
@@ -26,9 +25,9 @@ class Task extends Model
         'due_date' => 'date',
     ];
 
-    public function employee()
+    public function employees()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsToMany(Employee::class);
     }
 
     public function scopeSearch($query, $keyword)

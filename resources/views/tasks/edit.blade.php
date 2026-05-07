@@ -62,18 +62,17 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-                            <select
-                                name="employee_id"
-                                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                                <option value="">— Unassigned —</option>
-                                @foreach($employees as $employee)
-                                    <option value="{{ $employee->id }}" {{ (old('employee_id', $task->employee_id) == $employee->id) ? 'selected' : '' }}>
-                                        {{ $employee->name }}
-                                    </option>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+                            <div class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm">
+                                @foreach ($employees as $employee)
+                                    <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded transition">
+                                        <input type="checkbox" name="employees[]" value="{{ $employee->id }}" 
+                                            {{ $task->employees->contains($employee->id) ? 'checked' : '' }}
+                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                        <span class="text-gray-700">{{ $employee->name }}</span>
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
                         </div>
                     </div>
 

@@ -46,9 +46,21 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load('tasks');
+        $project->load(['tasks.employees', 'tasks.tags']);
 
-        return view('projects.show', compact('project'));
+        // Aggregate employees for this project
+        $employees = \App\Models\Employee::whereHas('tasks', function($q) use ($project) {
+            $q->where('project_id', $project->id);
+        })
+        ->withCount(['tasks as project_tasks_count' => function($q) use ($project) {
+            $q->where('project_id', $project->id);
+        }])
+        ->withCount(['tasks as finished_tasks_count' => function($q) use ($project) {
+            $q->where('project_id', $project->id)->where('status', 'done');
+        }])
+        ->get();
+
+        return view('projects.show', compact('project', 'employees'));
     }
 
     /**

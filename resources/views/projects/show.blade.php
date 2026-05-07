@@ -31,6 +31,46 @@
                 </div>
             </div>
 
+            {{-- Employees Participation --}}
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 px-1">Team Members ({{ $employees->count() }})</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    @forelse($employees as $employee)
+                        @php
+                            $empProgress = $employee->project_tasks_count > 0 
+                                ? round(($employee->finished_tasks_count / $employee->project_tasks_count) * 100) 
+                                : 0;
+                        @endphp
+                        <div class="bg-white shadow-sm sm:rounded-lg p-5 border border-gray-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+                                    {{ substr($employee->name, 0, 1) }}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 leading-tight">{{ $employee->name }}</h4>
+                                    <p class="text-xs text-gray-500">{{ $employee->position ?: 'Member' }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs text-gray-600">
+                                    <span>Tasks: {{ $employee->project_tasks_count }}</span>
+                                    <span>Done: {{ $employee->finished_tasks_count }}</span>
+                                </div>
+                                <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-green-500 h-2 transition-all duration-500" style="width: {{ $empProgress }}%"></div>
+                                </div>
+                                <p class="text-right text-[10px] text-gray-400 font-medium">{{ $empProgress }}%</p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-full bg-white shadow-sm sm:rounded-lg p-6 text-center text-gray-500 italic border border-dashed border-gray-200">
+                            No employees assigned to tasks in this project.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
             {{-- Tasks belonging to this project --}}
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">
@@ -45,6 +85,7 @@
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">ID</th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Title</th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Status</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Assigned To</th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Priority</th>
                                 </tr>
                             </thead>
@@ -71,6 +112,17 @@
                                                 <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full font-medium">○
                                                     Todo</span>
                                             @endif
+                                        </td>
+                                        <td class="px-4 py-2 text-sm">
+                                            <div class="flex -space-x-2 overflow-hidden">
+                                                @forelse($task->employees as $employee)
+                                                    <div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-indigo-500 text-white flex items-center justify-center text-[10px] font-bold" title="{{ $employee->name }}">
+                                                        {{ substr($employee->name, 0, 1) }}
+                                                    </div>
+                                                @empty
+                                                    <span class="text-gray-400 text-xs">—</span>
+                                                @endforelse
+                                            </div>
                                         </td>
                                         <td class="px-4 py-2 text-sm whitespace-nowrap">
                                             @for ($i = 1; $i <= 5; $i++)
