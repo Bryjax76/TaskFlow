@@ -16,7 +16,20 @@ class Task extends Model
         'status',
         'priority',
         'project_id',
+        'employee_id',
+        'position',
+        'due_date',
+        'color',
     ];
+
+    protected $casts = [
+        'due_date' => 'date',
+    ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
 
     public function scopeSearch($query, $keyword)
     {
@@ -32,5 +45,10 @@ class Task extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'task_tag');
     }
 }

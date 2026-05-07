@@ -116,7 +116,16 @@
                                 @forelse($tasks as $task)
                                     <tr class="hover:bg-gray-50 transition duration-150">
                                         <td class="px-4 py-2 text-sm">{{ $task->id }}</td>
-                                        <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ $task->title }}</td>
+                                        <td class="px-4 py-2 text-sm font-medium text-gray-900">
+                                            <div>{{ $task->title }}</div>
+                                            <div class="flex flex-wrap gap-1 mt-1">
+                                                @foreach($task->tags as $tag)
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style="background-color: {{ $tag->color }}">
+                                                        {{ $tag->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </td>
                                         <td class="px-4 py-2 text-sm text-gray-600">{{ Str::limit($task->description, 50) }}</td>
                                         <td class="px-4 py-2 text-sm whitespace-nowrap">
                                             @for ($i = 1; $i <= 5; $i++)
@@ -129,19 +138,18 @@
                                             <span class="ml-1 text-xs text-gray-500">({{ $task->priority ?? 0 }}/5)</span>
                                         </td>
                                         <td class="px-4 py-2 text-sm">
-                                            @if($task->status === 'done')
-                                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full font-medium">
-                                                    ✓ Done
-                                                </span>
-                                            @elseif($task->status === 'in_progress')
-                                                <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full font-medium">
-                                                    ⟳ In progress
-                                                </span>
-                                            @else
-                                                <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full font-medium">
-                                                    ○ Todo
-                                                </span>
-                                            @endif
+                                            <form method="POST" action="{{ route('tasks.updateStatus', $task->id) }}" id="status-form-{{ $task->id }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <select name="status" 
+                                                        onchange="this.form.submit()"
+                                                        class="text-xs font-medium rounded-full px-2 py-1 border-0 cursor-pointer focus:ring-2 focus:ring-indigo-500
+                                                        {{ $task->status === 'done' ? 'bg-green-100 text-green-700' : ($task->status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700') }}">
+                                                    <option value="todo" {{ $task->status === 'todo' ? 'selected' : '' }}>○ Todo</option>
+                                                    <option value="in_progress" {{ $task->status === 'in_progress' ? 'selected' : '' }}>⟳ In progress</option>
+                                                    <option value="done" {{ $task->status === 'done' ? 'selected' : '' }}>✓ Done</option>
+                                                </select>
+                                            </form>
                                         </td>
                                         <td class="px-4 py-2 text-sm">
                                             @if($task->project)
