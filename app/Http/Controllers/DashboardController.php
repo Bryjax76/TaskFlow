@@ -22,6 +22,13 @@ class DashboardController extends Controller
             ? round(($stats['done'] / $stats['total']) * 100)
             : 0;
 
-        return view('dashboard', compact('stats'));
+        $projects = \App\Models\Project::withCount([
+            'tasks',
+            'tasks as done_tasks_count' => function ($query) {
+                $query->where('status', 'done');
+            }
+        ])->get();
+
+        return view('dashboard', compact('stats', 'projects'));
     }
 }
