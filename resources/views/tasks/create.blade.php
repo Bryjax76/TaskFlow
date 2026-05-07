@@ -24,6 +24,17 @@
                             class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             placeholder="Task description"></textarea>
                     </div>
+                    <!-- Project -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                        <select name="project_id"
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">— No project —</option>
+                            @foreach ($projects as $project)
+                                <option value="{{ $project->id }}">{{ $project->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <!-- Status + Priority grid -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>

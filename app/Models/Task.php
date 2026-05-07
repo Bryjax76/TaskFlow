@@ -14,7 +14,8 @@ class Task extends Model
         'title',
         'description',
         'status',
-        'priority'
+        'priority',
+        'project_id',
     ];
 
     public function scopeSearch($query, $keyword)
@@ -27,5 +28,9 @@ class Task extends Model
             $q->where('title', 'like', '%' . $keyword . '%')
                 ->orWhere('description', 'like', '%' . $keyword . '%');
         });
+    }
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }

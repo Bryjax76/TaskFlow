@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -15,11 +16,18 @@ class TaskController extends Controller
         $view = "tasks.index";
         $search = $request->search;
 
-        $tasks = Task::search($search)
+        $tasks = Task::with('project')
+            ->search($search)
+            ->when($request->project_id, fn($q, $v) => $q->where('project_id', $v))
+            ->when($request->priority, fn($q, $v) => $q->where('priority', $v))
+            ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
+            ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
             ->latest()
             ->paginate(10);
 
-        return view($view, compact('tasks', 'search'));
+        $projects = Project::orderBy('name')->get();
+
+        return view($view, compact('tasks', 'search', 'projects'));
     }
 
     /**
@@ -28,8 +36,9 @@ class TaskController extends Controller
     public function create()
     {
         $view = "tasks.create";
+        $projects = Project::orderBy('name')->get();
 
-        return view($view);
+        return view($view, compact('projects'));
     }
 
     /**
@@ -42,6 +51,7 @@ class TaskController extends Controller
             'description' => 'required|string|max:255',
             'status' => 'nullable|string',
             'priority' => 'nullable|integer',
+            'project_id' => 'nullable|exists:projects,id',
         ]);
 
         Task::create([
@@ -49,6 +59,7 @@ class TaskController extends Controller
             'description' => $validated['description'],
             'status' => $validated['status'],
             'priority' => $validated['priority'],
+            'project_id' => $validated['project_id'] ?? null,
         ]);
 
         return redirect()->route('tasks.index')
