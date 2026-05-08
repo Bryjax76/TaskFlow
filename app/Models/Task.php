@@ -27,6 +27,11 @@ class Task extends Model
         'due_date' => 'date',
     ];
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
+
     public function employees()
     {
         return $this->belongsToMany(Employee::class);

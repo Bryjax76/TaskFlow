@@ -27,9 +27,10 @@ class TaskController extends Controller
             $sortBy = 'created_at';
         }
 
-        $tasks = Task::with(['project', 'tags'])
+        $tasks = Task::with(['project', 'tags', 'employees', 'comments.user'])
             ->search($search)
             ->when($request->project_id, fn($q, $v) => $q->where('project_id', $v))
+            ->when($request->status, fn($q, $v) => $q->where('status', $v))
             ->when($request->priority, fn($q, $v) => $q->where('priority', $v))
             ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
             ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
@@ -55,6 +56,7 @@ class TaskController extends Controller
         $tasks = Task::with(['project', 'tags', 'employees'])
             ->search($search)
             ->when($request->project_id, fn($q, $v) => $q->where('project_id', $v))
+            ->when($request->status, fn($q, $v) => $q->where('status', $v))
             ->when($request->priority, fn($q, $v) => $q->where('priority', $v))
             ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
             ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
@@ -62,8 +64,50 @@ class TaskController extends Controller
             ->orderBy($sortBy, $sortOrder)
             ->get();
 
-        $pdf = Pdf::loadView('tasks.pdf', compact('tasks'));
-        return $pdf->download('tasks-report-' . now()->format('Y-m-d') . '.pdf');
+        // Stats for Chart - Should ignore Status filter but keep Project filter
+        $statsTasks = Task::search($search)
+            ->when($request->project_id, fn($q, $v) => $q->where('project_id', $v))
+            ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
+            ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
+            ->get();
+
+        $total = $statsTasks->count();
+        $todo = $statsTasks->where('status', 'todo')->count();
+        $inProgress = $statsTasks->where('status', 'in_progress')->count();
+        $done = $statsTasks->where('status', 'done')->count();
+        $completionRate = $total > 0 ? round(($done / $total) * 100) : 0;
+
+        // Generate QuickChart URL (Pie Chart)
+        $chartData = [
+            'type' => 'pie',
+            'data' => [
+                'labels' => ['Todo', 'In Progress', 'Done'],
+                'datasets' => [[
+                    'data' => [$todo, $inProgress, $done],
+                    'backgroundColor' => ['#9ca3af', '#facc15', '#22c55e']
+                ]]
+            ],
+            'options' => [
+                'title' => [
+                    'display' => true,
+                    'text' => 'Task Status Distribution'
+                ]
+            ]
+        ];
+        $chartUrl = "https://quickchart.io/chart?c=" . urlencode(json_encode($chartData));
+
+        // Fetch image and convert to base64 for reliable PDF rendering
+        try {
+            $imageContent = file_get_contents($chartUrl);
+            $base64Image = 'data:image/png;base64,' . base64_encode($imageContent);
+        } catch (\Exception $e) {
+            $base64Image = null; // Fallback
+        }
+
+        $pdf = Pdf::loadView('tasks.pdf', compact('tasks', 'total', 'todo', 'inProgress', 'done', 'completionRate', 'base64Image'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('task-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**

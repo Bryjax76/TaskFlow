@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::resource('tags', TagController::class);
     Route::resource('employees', EmployeeController::class);
+    Route::post('/comments', [App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
 });
 
 require __DIR__ . '/auth.php';

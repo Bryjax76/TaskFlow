@@ -33,6 +33,42 @@
         <p>Generated on {{ now()->format('d.m.Y H:i') }}</p>
     </div>
 
+    {{-- Executive Summary --}}
+    <div style="margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <table style="width: 100%; border: none; margin-bottom: 0;">
+            <tr>
+                <td style="width: 60%; border: none; vertical-align: top;">
+                    <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Executive Summary</h2>
+                    <table style="width: 100%; border: none; margin-top: 10px;">
+                        <tr>
+                            <td style="border: none; padding: 5px 0; font-size: 11px;">Total Tasks:</td>
+                            <td style="border: none; padding: 5px 0; font-size: 11px;"><strong>{{ $total }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 5px 0; font-size: 11px;">Finished Tasks:</td>
+                            <td style="border: none; padding: 5px 0; font-size: 11px; color: #22c55e;"><strong>{{ $done }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 5px 0; font-size: 11px;">In Progress:</td>
+                            <td style="border: none; padding: 5px 0; font-size: 11px; color: #f59e0b;"><strong>{{ $inProgress }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 15px 0 5px 0; font-size: 11px;">Overall Completion:</td>
+                            <td style="border: none; padding: 15px 0 5px 0;">
+                                <strong style="font-size: 18px; color: #4f46e5;">{{ $completionRate }}%</strong>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="width: 40%; border: none; text-align: right; vertical-align: middle;">
+                    @if($base64Image)
+                        <img src="{{ $base64Image }}" style="width: 280px; height: auto; border-radius: 5px;">
+                    @endif
+                </td>
+            </tr>
+        </table>
+    </div>
+
     <table>
         <thead>
             <tr>
