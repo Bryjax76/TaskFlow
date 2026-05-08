@@ -32,7 +32,9 @@
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">— No project (Will be Unassigned) —</option>
                                 @foreach ($projects as $project)
-                                    <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                    <option value="{{ $project->id }}" {{ (request('project_id') == $project->id) ? 'selected' : '' }}>
+                                        {{ $project->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -50,17 +52,46 @@
                         </div>
                     </div>
 
-                    <!-- Start Date + Due Date -->
+                    <!-- Priority -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
+                        <input type="hidden" name="priority" id="priority-input" value="1">
+                        <div class="flex items-center gap-2">
+                            @php
+                                $priorities = [
+                                    1 => ['label' => 'Low', 'class' => 'bg-gray-100 text-gray-600 border-gray-200'],
+                                    2 => ['label' => 'Normal', 'class' => 'bg-blue-100 text-blue-700 border-blue-200'],
+                                    3 => ['label' => 'Medium', 'class' => 'bg-yellow-100 text-yellow-700 border-yellow-200'],
+                                    4 => ['label' => 'High', 'class' => 'bg-orange-100 text-orange-700 border-orange-200'],
+                                    5 => ['label' => 'Critical', 'class' => 'bg-red-100 text-red-700 border-red-200'],
+                                ];
+                            @endphp
+                            @foreach($priorities as $val => $p)
+                                <button type="button" 
+                                    onclick="setPriority({{ $val }}, this)"
+                                    class="priority-btn flex-1 px-2 py-2 rounded-lg border text-xs font-bold transition-all duration-200 {{ $val === 1 ? $p['class'] . ' ring-2 ring-indigo-500 ring-offset-1' : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300' }}"
+                                    data-active-class="{{ $p['class'] }}">
+                                    {{ $val }} - {{ $p['label'] }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Dates -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                            <input type="date" name="start_date"
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="start_date" 
+                                value="{{ $defaultStartDate->format('Y-m-d') }}"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Default: Next working day</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                            <input type="date" name="due_date"
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Due Date</label>
+                            <input type="date" name="due_date" 
+                                value="{{ $defaultDueDate->format('Y-m-d') }}"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <p class="text-[10px] text-gray-400 mt-1 italic">Default: End of week (Fri)</p>
                         </div>
                     </div>
 
@@ -70,22 +101,15 @@
                         <input type="color" name="color" value="#4f46e5"
                             class="w-full h-10 p-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
-                    <!-- Status + Priority grid -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status"
-                                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="todo">Todo</option>
-                                <option value="in_progress">In progress</option>
-                                <option value="done">Done</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                            <input type="number" name="priority" value="1" min="1" max="5"
-                                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        </div>
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+                        <select name="status"
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="todo" selected>Todo</option>
+                            <option value="in_progress">In progress</option>
+                            <option value="done">Done</option>
+                        </select>
                     </div>
 
                     <!-- Tags -->
@@ -107,14 +131,40 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex justify-between mt-8 pt-4 border-t border-gray-100">
-                        <button type="submit"
-                            class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition">
-                            Add task 🚀
-                        </button>
+                    <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100 gap-4">
+                        <a href="{{ route('tasks.index') }}" class="text-sm text-gray-500 hover:text-gray-700 transition">
+                            Cancel
+                        </a>
+                        
+                        <div class="flex items-center gap-3">
+                            <button type="submit" name="action" value="save_and_another"
+                                class="bg-white text-indigo-600 border border-indigo-600 px-5 py-2 rounded-lg hover:bg-indigo-50 transition font-medium">
+                                Add & Create Another ➕
+                            </button>
+                            
+                            <button type="submit" name="action" value="save"
+                                class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm">
+                                Add & Exit 🚀
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+        function setPriority(val, btn) {
+            // Update hidden input
+            document.getElementById('priority-input').value = val;
+            
+            // Reset all buttons
+            document.querySelectorAll('.priority-btn').forEach(b => {
+                b.className = "priority-btn flex-1 px-2 py-2 rounded-lg border text-xs font-bold transition-all duration-200 bg-white text-gray-400 border-gray-200 hover:border-gray-300";
+            });
+            
+            // Activate current button
+            const activeClass = btn.getAttribute('data-active-class');
+            btn.className = `priority-btn flex-1 px-2 py-2 rounded-lg border text-xs font-bold transition-all duration-200 ${activeClass} ring-2 ring-indigo-500 ring-offset-1`;
+        }
+    </script>
 </x-app-layout>

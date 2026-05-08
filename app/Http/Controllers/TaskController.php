@@ -35,7 +35,7 @@ class TaskController extends Controller
             ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
             ->when($request->trashed, fn($q) => $q->onlyTrashed())
             ->orderBy($sortBy, $sortOrder)
-            ->paginate(10);
+            ->get();
 
         $projects = Project::orderBy('name')->get();
         $allTags = \App\Models\Tag::orderBy('name')->get();
@@ -76,7 +76,26 @@ class TaskController extends Controller
         $employees = \App\Models\Employee::orderBy('name')->get();
         $tags = \App\Models\Tag::orderBy('name')->get();
 
-        return view($view, compact('projects', 'employees', 'tags'));
+        // Smart Defaults for Dates
+        $now = now();
+        
+        // Default Start Date: Next working day (Mon-Fri)
+        $defaultStartDate = $now->copy()->addDay();
+        while ($defaultStartDate->isWeekend()) {
+            $defaultStartDate->addDay();
+        }
+        
+        // Default Due Date: Friday of the week the task STARTS
+        $defaultDueDate = $defaultStartDate->copy()->endOfWeek()->subDays(2);
+        
+        // If the task starts on a Friday, set due date to next Friday? 
+        // Actually, Friday of the same week is fine if it starts on Mon-Thu.
+        // If it starts on Friday, let's make it next Friday.
+        if ($defaultStartDate->isFriday()) {
+            $defaultDueDate->addWeek();
+        }
+
+        return view($view, compact('projects', 'employees', 'tags', 'defaultStartDate', 'defaultDueDate'));
     }
 
     /**
@@ -126,6 +145,11 @@ class TaskController extends Controller
 
         if (!empty($validated['employees'])) {
             $task->employees()->sync($validated['employees']);
+        }
+
+        if ($request->input('action') === 'save_and_another') {
+            return redirect()->route('tasks.create', ['project_id' => $task->project_id])
+                ->with('success', 'Task added! You can now add another one. ➕');
         }
 
         return redirect()->route('tasks.index')
