@@ -6,6 +6,8 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class TaskController extends Controller
 {
     /**
@@ -16,6 +18,15 @@ class TaskController extends Controller
         $view = "tasks.index";
         $search = $request->search;
 
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        // Valid sortable columns
+        $validColumns = ['id', 'title', 'priority', 'status', 'project_id', 'start_date', 'due_date', 'created_at'];
+        if (!in_array($sortBy, $validColumns)) {
+            $sortBy = 'created_at';
+        }
+
         $tasks = Task::with(['project', 'tags'])
             ->search($search)
             ->when($request->project_id, fn($q, $v) => $q->where('project_id', $v))
@@ -23,13 +34,36 @@ class TaskController extends Controller
             ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
             ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
             ->when($request->trashed, fn($q) => $q->onlyTrashed())
-            ->latest()
+            ->orderBy($sortBy, $sortOrder)
             ->paginate(10);
 
         $projects = Project::orderBy('name')->get();
         $allTags = \App\Models\Tag::orderBy('name')->get();
 
         return view($view, compact('tasks', 'search', 'projects', 'allTags'));
+    }
+
+    /**
+     * Export tasks to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $search = $request->search;
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $tasks = Task::with(['project', 'tags', 'employees'])
+            ->search($search)
+            ->when($request->project_id, fn($q, $v) => $q->where('project_id', $v))
+            ->when($request->priority, fn($q, $v) => $q->where('priority', $v))
+            ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
+            ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
+            ->when($request->trashed, fn($q) => $q->onlyTrashed())
+            ->orderBy($sortBy, $sortOrder)
+            ->get();
+
+        $pdf = Pdf::loadView('tasks.pdf', compact('tasks'));
+        return $pdf->download('tasks-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
@@ -58,6 +92,7 @@ class TaskController extends Controller
             'project_id' => 'nullable|exists:projects,id',
             'employees' => 'nullable|array',
             'employees.*' => 'exists:employees,id',
+            'start_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'color' => 'nullable|string',
             'tags' => 'nullable|array',
@@ -80,6 +115,7 @@ class TaskController extends Controller
             'status' => $validated['status'],
             'priority' => $validated['priority'],
             'project_id' => $projectId,
+            'start_date' => $validated['start_date'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
             'color' => $validated['color'] ?? '#indigo-600',
         ]);
@@ -129,6 +165,7 @@ class TaskController extends Controller
             'project_id' => 'nullable|exists:projects,id',
             'employees' => 'nullable|array',
             'employees.*' => 'exists:employees,id',
+            'start_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'color' => 'nullable|string',
             'tags' => 'nullable|array',
@@ -151,6 +188,7 @@ class TaskController extends Controller
             'status' => $validated['status'],
             'priority' => $validated['priority'],
             'project_id' => $projectId,
+            'start_date' => $validated['start_date'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
             'color' => $validated['color'] ?? $task->color,
         ]);
@@ -185,7 +223,33 @@ class TaskController extends Controller
 
         $task->update(['status' => $validated['status']]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated! 🔥',
+                'status' => $task->status
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Status updated! 🔥');
+    }
+
+    /**
+     * Update task due date via AJAX.
+     */
+    public function updateDueDate(Request $request, Task $task)
+    {
+        $validated = $request->validate([
+            'due_date' => 'required|date',
+        ]);
+
+        $task->update(['due_date' => $validated['due_date']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Due date updated! 📅',
+            'due_date' => $task->due_date->format('Y-m-d')
+        ]);
     }
 
     /**

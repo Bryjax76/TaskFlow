@@ -17,11 +17,13 @@ class Task extends Model
         'priority',
         'project_id',
         'position',
+        'start_date',
         'due_date',
         'color',
     ];
 
     protected $casts = [
+        'start_date' => 'date',
         'due_date' => 'date',
     ];
 

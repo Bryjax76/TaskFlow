@@ -16,9 +16,17 @@
                     </a>
                 @endif
 
+                <a href="{{ route('tasks.exportPdf', request()->query()) }}"
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200 flex items-center gap-2 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    PDF Report
+                </a>
+
                 <a href="{{ route('tasks.create') }}"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-200">
-                    + Add
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-200 shadow-sm flex items-center gap-2">
+                    <span>+ Add Task</span>
                 </a>
             </div>
         </div>
@@ -108,20 +116,65 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="overflow-x-auto">
+                        @php
+                            $sortBy = request('sort_by', 'created_at');
+                            $sortOrder = request('sort_order', 'desc');
+
+                            function getSortUrl($column, $sortBy, $sortOrder) {
+                                $newOrder = ($sortBy === $column && $sortOrder === 'asc') ? 'desc' : 'asc';
+                                return request()->fullUrlWithQuery(['sort_by' => $column, 'sort_order' => $newOrder]);
+                            }
+
+                            function getSortIcon($column, $sortBy, $sortOrder) {
+                                if ($sortBy !== $column) return '↕️';
+                                return $sortOrder === 'asc' ? '↑' : '↓';
+                            }
+                        @endphp
                         <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
                             <thead class="bg-gray-100">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">ID</th>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Title</th>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Description</th>
-                                    <th
-                                        class="px-4 py-2 text-left text-sm font-semibold text-gray-600 whitespace-nowrap">
-                                        Priority
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('id', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            ID {!! getSortIcon('id', $sortBy, $sortOrder) !!}
+                                        </a>
                                     </th>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Status</th>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Project</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('title', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Title {!! getSortIcon('title', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Description</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600 whitespace-nowrap">
+                                        <a href="{{ getSortUrl('priority', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Priority {!! getSortIcon('priority', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('status', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Status {!! getSortIcon('status', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('project_id', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Project {!! getSortIcon('project_id', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Quick Tags</th>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Created</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('start_date', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Start Date {!! getSortIcon('start_date', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('due_date', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Due Date {!! getSortIcon('due_date', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                        <a href="{{ getSortUrl('created_at', $sortBy, $sortOrder) }}" class="flex items-center gap-1 hover:text-indigo-600">
+                                            Created {!! getSortIcon('created_at', $sortBy, $sortOrder) !!}
+                                        </a>
+                                    </th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Actions</th>
                                 </tr>
                             </thead>
@@ -136,14 +189,19 @@
                                         <td class="px-4 py-2 text-sm text-gray-600">{{ Str::limit($task->description, 50) }}
                                         </td>
                                         <td class="px-4 py-2 text-sm whitespace-nowrap">
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                @if ($i <= $task->priority)
-                                                    <span class="text-indigo-500 text-lg">●</span>
-                                                @else
-                                                    <span class="text-gray-300 text-lg">●</span>
-                                                @endif
-                                            @endfor
-                                            <span class="ml-1 text-xs text-gray-500">({{ $task->priority ?? 0 }}/5)</span>
+                                            @php
+                                                $priorityClasses = [
+                                                    1 => 'bg-gray-100 text-gray-600 border-gray-200',
+                                                    2 => 'bg-blue-100 text-blue-700 border-blue-200',
+                                                    3 => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                                                    4 => 'bg-orange-100 text-orange-700 border-orange-200',
+                                                    5 => 'bg-red-100 text-red-700 border-red-200',
+                                                ];
+                                                $pClass = $priorityClasses[$task->priority] ?? $priorityClasses[1];
+                                            @endphp
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide border {{ $pClass }}">
+                                                {{ $task->priority ?? 0 }} / 5
+                                            </span>
                                         </td>
                                         <td class="px-4 py-2 text-sm">
                                             <form method="POST" action="{{ route('tasks.updateStatus', $task->id) }}"
@@ -200,6 +258,18 @@
                                                     ➕
                                                 </button>
                                             </form>
+                                        </td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 whitespace-nowrap">
+                                            {{ $task->start_date ? $task->start_date->format('d.m.Y') : '—' }}
+                                        </td>
+                                        <td class="px-4 py-2 text-sm whitespace-nowrap">
+                                            @if($task->due_date)
+                                                <span class="{{ $task->due_date->isPast() && $task->status !== 'done' ? 'text-red-600 font-bold' : 'text-gray-600' }}">
+                                                    {{ $task->due_date->format('d.m.Y') }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">—</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-2 text-sm text-gray-600 whitespace-nowrap">
                                             {{ optional($task->created_at)->format('d.m.Y H:i') }}

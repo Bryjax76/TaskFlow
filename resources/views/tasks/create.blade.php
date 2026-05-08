@@ -24,7 +24,6 @@
                             class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             placeholder="Task description"></textarea>
                     </div>
-                    </div>
                     <!-- Project + Employee -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -51,18 +50,25 @@
                         </div>
                     </div>
 
-                    <!-- Due Date + Color -->
+                    <!-- Start Date + Due Date -->
                     <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="start_date"
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                             <input type="date" name="due_date"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Task Color</label>
-                            <input type="color" name="color" value="#4f46e5"
-                                class="w-full h-10 p-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        </div>
+                    </div>
+
+                    <!-- Color -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Task Color</label>
+                        <input type="color" name="color" value="#4f46e5"
+                            class="w-full h-10 p-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                     <!-- Status + Priority grid -->
                     <div class="grid grid-cols-2 gap-4">

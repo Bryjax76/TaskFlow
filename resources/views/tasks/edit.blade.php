@@ -76,8 +76,17 @@
                         </div>
                     </div>
 
-                    {{-- DUE DATE + COLOR --}}
+                    {{-- START DATE + DUE DATE --}}
                     <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                value="{{ old('start_date', $task->start_date ? $task->start_date->format('Y-m-d') : '') }}"
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                             <input
@@ -87,15 +96,17 @@
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Task Color</label>
-                            <input
-                                type="color"
-                                name="color"
-                                value="{{ old('color', $task->color ?? '#4f46e5') }}"
-                                class="w-full h-10 p-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                        </div>
+                    </div>
+
+                    {{-- COLOR --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Task Color</label>
+                        <input
+                            type="color"
+                            name="color"
+                            value="{{ old('color', $task->color ?? '#4f46e5') }}"
+                            class="w-full h-10 p-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
                     </div>
 
                     {{-- STATUS + PRIORITY --}}
